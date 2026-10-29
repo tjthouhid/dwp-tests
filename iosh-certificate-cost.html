@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IOSH certificate costs — how to test</title>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #5c6774;
+      --line: #e3e7ec;
+      --bg: #f4f6f8;
+      --paper: #ffffff;
+      --orange: #e26512;
+      --orange-ink: #9a3f08;
+      --orange-soft: #fff3ea;
+      --green: #176b45;
+      --green-soft: #e7f6ee;
+      --amber: #8a5a00;
+      --amber-soft: #fff6e5;
+      --red: #9f2d22;
+      --red-soft: #fdeceb;
+      --shadow: 0 1px 2px rgba(28, 36, 48, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+
+    a { color: var(--orange-ink); }
+    a:hover { color: var(--orange); }
+
+    :focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 2px;
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    header.top {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .kicker {
+      margin: 0 0 6px;
+      font-size: 0.78rem;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange-ink);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.85rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 8px 0 0;
+      max-width: 42rem;
+      color: var(--muted);
+    }
+
+    nav.jumps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 22px;
+    }
+
+    nav.jumps a {
+      text-decoration: none;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+
+    nav.jumps a:hover { border-color: #c9d0d8; }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+      letter-spacing: -0.01em;
+    }
+
+    .section-note {
+      margin: 0 0 16px;
+      color: var(--muted);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .idea {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fbfcfd;
+    }
+
+    .idea h3 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .idea p { margin: 0; color: var(--muted); }
+
+    .paths {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .path {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 14px 12px;
+      background: #fff;
+    }
+
+    .path:hover { border-color: #f0c2a4; background: #fffaf6; }
+
+    .path strong { display: block; margin-bottom: 6px; }
+
+    .crumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .crumbs span {
+      background: #f3f5f7;
+      border-radius: 6px;
+      padding: 2px 7px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid #d5dbe2;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 12px;
+    }
+
+    button:hover { background: #f7f8fa; }
+
+    button.primary {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+    }
+
+    button.primary:hover { background: #cf580d; }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .story {
+      min-height: 3.2rem;
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--amber-soft);
+      color: #5c3b00;
+    }
+
+    .story.added { background: var(--green-soft); color: var(--green); }
+    .story.removed { background: var(--red-soft); color: var(--red); }
+    .story.same { background: var(--amber-soft); color: #5c3b00; }
+
+    .screen {
+      border: 1px solid #d7dee6;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      min-height: 220px;
+    }
+
+    .screen-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      background: #f7f8fa;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .screen-bar h3 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .screen-bar p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .pill {
+      font-size: 0.75rem;
+      font-weight: 650;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .rows { padding: 8px; }
+
+    .empty {
+      margin: 28px 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .row {
+      display: grid;
+      gap: 2px;
+      padding: 10px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+    }
+
+    .row + .row { margin-top: 4px; }
+
+    .row.fresh {
+      background: var(--green-soft);
+      border-color: #b7e0cb;
+    }
+
+    .row.log-only {
+      background: var(--amber-soft);
+      border-color: #f0ddb0;
+    }
+
+    .row .who {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 650;
+    }
+
+    .row .meta, .row .sub {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .money { font-variant-numeric: tabular-nums; }
+
+    .prices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .price {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .price .label { margin: 0; font-weight: 650; }
+    .price .amount {
+      margin: 8px 0 2px;
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+    }
+    .price .when { margin: 0; color: var(--muted); font-size: 0.86rem; }
+    .price.empty-price .amount { color: var(--muted); font-size: 1.2rem; padding-top: 6px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th { font-size: 0.8rem; color: var(--muted); font-weight: 650; }
+
+    ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+
+    ol.steps > li {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    ol.steps > li:first-child { border-top: 0; padding-top: 0; }
+
+    .num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--orange-soft);
+      color: var(--orange-ink);
+      font-weight: 700;
+    }
+
+    .step h3 { margin: 4px 0 4px; font-size: 1rem; }
+    .step p { margin: 0; }
+    .look {
+      margin-top: 8px !important;
+      padding: 8px 10px;
+      background: #f7f8fa;
+      border-radius: 8px;
+      color: var(--ink);
+    }
+
+    .export-mock {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .fake-menu {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .fake-menu p {
+      margin: 8px 8px 4px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .fake-menu div {
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+
+    .checks { display: grid; gap: 8px; }
+
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--orange); }
+
+    .progress {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .bar {
+      flex: 1;
+      height: 8px;
+      background: #e8edf2;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--green);
+    }
+
+    @media (max-width: 800px) {
+      header.top, .split, .paths, .prices, .export-mock { display: block; }
+      .path, .price, .idea { margin-bottom: 10px; }
+      h1 { font-size: 1.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      nav.jumps, .controls, button { display: none; }
+      section { break-inside: avoid; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <p class="kicker">Tester guide</p>
+        <h1>IOSH certificate costs</h1>
+        <p class="lede">Finance needs the learner’s name and the amount to set aside. Use this page beside the admin. The picture below is practice only. It does not change real certificates.</p>
+      </div>
+    </header>
+
+    <nav class="jumps" aria-label="On this page">
+      <a href="#two-lists">The two lists</a>
+      <a href="#picture">Practice picture</a>
+      <a href="#prices">Prices</a>
+      <a href="#admin">Do this in the admin</a>
+      <a href="#export">Export</a>
+      <a href="#check">Tick when it passes</a>
+    </nav>
+
+    <section id="two-lists">
+      <h2>There are two lists. They do different jobs.</h2>
+      <p class="section-note">Open both while you test. Certification, then IOSH.</p>
+      <div class="split">
+        <article class="idea">
+          <h3>Certificate costs</h3>
+          <p>This is the money. One row means one amount to set aside. If the row is gone, that amount is no longer set aside.</p>
+        </article>
+        <article class="idea">
+          <h3>Activity log</h3>
+          <p>This is the diary. It shows who ordered, uploaded, moved a certificate back, deleted, or archived it. The diary does not add a second charge.</p>
+        </article>
+      </div>
+      <div class="paths" style="margin-top: 12px;">
+        <a class="path" href="https://client.compliance.test/admin/iosh/order-certificates">
+          <strong>Order Certificates</strong>
+          <div class="crumbs"><span>Certification</span><span>IOSH</span><span>Order Certificates</span></div>
+        </a>
+        <a class="path" href="https://client.compliance.test/admin/iosh/reconcile-certificates">
+          <strong>Reconcile Certificates</strong>
+          <div class="crumbs"><span>Certification</span><span>IOSH</span><span>Reconcile Certificates</span></div>
+        </a>
+        <a class="path" href="https://client.compliance.test/admin/iosh/certificate-costs">
+          <strong>Certificate costs</strong>
+          <div class="crumbs"><span>Certification</span><span>IOSH</span><span>Certificate costs</span></div>
+        </a>
+        <a class="path" href="https://client.compliance.test/admin/iosh/activity-log">
+          <strong>Activity log</strong>
+          <div class="crumbs"><span>Certification</span><span>IOSH</span><span>Activity log</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section id="picture">
+      <h2>Watch what should happen</h2>
+      <p class="section-note">Press the buttons in order. The two screens should change the same way in the real admin.</p>
+      <div class="controls">
+        <button type="button" class="primary" id="do-order">1. Order certificate</button>
+        <button type="button" id="do-upload">2. Upload the PDF</button>
+        <button type="button" id="do-again">3. Order it again</button>
+        <button type="button" id="do-back">4. Move back</button>
+        <button type="button" id="do-reorder">5. Order it once more</button>
+        <button type="button" id="do-reset">Start again</button>
+      </div>
+      <p class="story" id="story" aria-live="polite">Nothing has been ordered yet. The cost list should say “No records yet”.</p>
+      <div class="screens split">
+        <div class="screen">
+          <div class="screen-bar">
+            <div>
+              <h3>Certificate costs</h3>
+              <p>Money to set aside</p>
+            </div>
+            <span class="pill" id="cost-count">0 rows</span>
+          </div>
+          <div class="rows" id="cost-rows"></div>
+        </div>
+        <div class="screen">
+          <div class="screen-bar">
+            <div>
+              <h3>Activity log</h3>
+              <p>Who did it, and when</p>
+            </div>
+            <span class="pill" id="log-count">0 lines</span>
+          </div>
+          <div class="rows" id="log-rows"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="prices">
+      <h2>Prices you should see</h2>
+      <p class="section-note">On Certificate costs, click <strong>Certificate prices</strong>. Each card is one way of teaching the course.</p>
+      <div class="prices">
+        <article class="price">
+          <p class="label">E-learning</p>
+          <p class="amount money">£28.10</p>
+          <p class="when">Used now, since 1 October 2025</p>
+        </article>
+        <article class="price">
+          <p class="label">Face-to-face</p>
+          <p class="amount money">£37.20</p>
+          <p class="when">Used now, since 1 October 2025</p>
+        </article>
+        <article class="price empty-price">
+          <p class="label">Virtual classroom</p>
+          <p class="amount">No price yet</p>
+          <p class="when">None was agreed. Leave it until someone types a price.</p>
+        </article>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Course name on the certificate</th>
+            <th>Treated as</th>
+            <th>Cost when ordered</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>IOSH Managing Safely eLearning</td>
+            <td>E-learning</td>
+            <td class="money">£28.10</td>
+          </tr>
+          <tr>
+            <td>IOSH Managing Safely eLearning V6</td>
+            <td>E-learning</td>
+            <td class="money">£28.10</td>
+          </tr>
+          <tr>
+            <td>A face-to-face or classroom course</td>
+            <td>Face-to-face</td>
+            <td class="money">£37.20</td>
+          </tr>
+          <tr>
+            <td>A virtual classroom course</td>
+            <td>Virtual classroom</td>
+            <td>Not set</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="look">Add a new price sets a price from a date you choose. People already on the cost list keep the amount they had. Change fixes a price you already saved. It does not rewrite the list.</p>
+    </section>
+
+    <section id="admin">
+      <h2>Do this in the admin</h2>
+      <p class="section-note">Use a named learner. After each step, look at Certificate costs and Activity log.</p>
+      <ol class="steps">
+        <li>
+          <div class="num">1</div>
+          <div class="step">
+            <h3>Check the three prices</h3>
+            <p>Open Certificate costs and click <strong>Certificate prices</strong>.</p>
+            <p class="look">E-learning £28.10. Face-to-face £37.20. Virtual classroom says <strong>No price yet</strong>.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">2</div>
+          <div class="step">
+            <h3>Order one certificate</h3>
+            <p>On Order Certificates, tick one learner, then choose <strong>Order Certificates</strong>. An Excel file downloads and the certificate moves to Reconcile Certificates.</p>
+            <p class="look">Certificate costs gains <strong>one</strong> row. Organisation and course are filled in. An e-learning title, including “eLearning V6”, shows £28.10. Face-to-face shows £37.20. Virtual classroom shows <strong>Not set</strong>.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">3</div>
+          <div class="step">
+            <h3>Upload the PDF</h3>
+            <p>On Reconcile Certificates, or Bulk Upload Certificates, upload the certificate. You can upload it again later. That is allowed.</p>
+            <p class="look">Certificate costs stays at one row. Activity log adds <strong>Certificate uploaded</strong>, with the organisation and course. The amount on that line is blank.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">4</div>
+          <div class="step">
+            <h3>Order the same certificate again</h3>
+            <p>If it is still on the cost list, order it a second time.</p>
+            <p class="look">Still <strong>one</strong> cost row. Activity log adds another <strong>Ordered</strong> line, with your name. That line is a note. It is not a second charge.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">5</div>
+          <div class="step">
+            <h3>Move it back</h3>
+            <p>On Reconcile Certificates, tick the certificate, then choose <strong>Move to Order Certificates</strong>.</p>
+            <p class="look">The row leaves Certificate costs. Activity log adds <strong>Moved back to order</strong> and shows <strong>your name</strong>.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">6</div>
+          <div class="step">
+            <h3>Order it again after the move</h3>
+            <p>Go back to Order Certificates and order that learner again.</p>
+            <p class="look">One cost row comes back, at the price used now.</p>
+          </div>
+        </li>
+        <li>
+          <div class="num">7</div>
+          <div class="step">
+            <h3>Try a later price</h3>
+            <p>On E-learning, click <strong>Add a new price</strong>. Type a new amount and a start date after today. Read the sentence, then save.</p>
+            <p class="look">Rows already on the list stay at £28.10. A certificate ordered on or after that date uses the new amount. Both prices stay on the card, each with its dates.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="export">
+      <h2>Export</h2>
+      <p class="section-note">Certificate costs and Activity log both have a tick box on the left of each row.</p>
+      <div class="export-mock">
+        <div class="screen">
+          <div class="screen-bar">
+            <div>
+              <h3>Tick the rows, then Export</h3>
+              <p>Activity log needs the tick boxes. Without them, Selected rows has nothing to download.</p>
+            </div>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <div class="who"><span><input type="checkbox" checked disabled aria-label="Example selected row"> John Mulvihill</span><span class="money">£28.10</span></div>
+              <div class="sub">Kings College London · IOSH Managing Safely eLearning</div>
+            </div>
+          </div>
+        </div>
+        <div class="fake-menu" aria-hidden="true">
+          <p>Selected rows</p>
+          <div>CSV</div>
+          <div>Excel</div>
+          <p>Current page</p>
+          <div>CSV</div>
+          <div>Excel</div>
+          <p>All filtered rows</p>
+          <div>CSV</div>
+          <div>Excel</div>
+        </div>
+      </div>
+      <p class="look">Tick one or more rows, then <strong>Export → Selected rows → Excel</strong> or CSV. <strong>Current page</strong> and <strong>All filtered rows</strong> work with nothing ticked. The file should show the organisation, the course, and £28.10 on an ordered e-learning row.</p>
+      <p class="look">Activity log is only for people with that permission. IW Owner can open it. Anyone else should see <strong>Access denied</strong>.</p>
+    </section>
+
+    <section id="check">
+      <div class="progress">
+        <h2 style="margin:0">Tick when it passes</h2>
+        <span id="progress-label">0 of 9</span>
+      </div>
+      <div class="bar" aria-hidden="true"><span id="progress-bar"></span></div>
+      <div class="checks" id="checks">
+        <label class="check"><input type="checkbox" data-check="prices"> The three price cards match: £28.10, £37.20, and No price yet.</label>
+        <label class="check"><input type="checkbox" data-check="order"> Ordering a certificate adds one cost row, with organisation and course.</label>
+        <label class="check"><input type="checkbox" data-check="elearn"> IOSH Managing Safely eLearning and eLearning V6 show £28.10, not “Not set”.</label>
+        <label class="check"><input type="checkbox" data-check="upload"> Uploading the PDF does not add another cost row.</label>
+        <label class="check"><input type="checkbox" data-check="second"> Ordering again, while the row is still there, does not add a second cost.</label>
+        <label class="check"><input type="checkbox" data-check="back"> Move to Order Certificates removes the cost row, and the log shows your name.</label>
+        <label class="check"><input type="checkbox" data-check="reorder"> Ordering after the move adds one cost row again.</label>
+        <label class="check"><input type="checkbox" data-check="later"> A later price does not change people already on the list.</label>
+        <label class="check"><input type="checkbox" data-check="export"> Export downloads the ticked rows, including organisation and course.</label>
+      </div>
+      <p style="margin:12px 0 0"><button type="button" id="clear-checks">Clear ticks</button></p>
+    </section>
+  </div>
+
+  <script>
+    const learner = {
+      name: 'John Mulvihill',
+      org: 'Kings College London',
+      course: 'IOSH Managing Safely eLearning',
+      amount: '£28.10',
+      cert: '9758'
+    };
+
+    const costs = [];
+    const logs = [];
+
+    const story = document.getElementById('story');
+    const costRows = document.getElementById('cost-rows');
+    const logRows = document.getElementById('log-rows');
+
+    function clock() {
+      return new Date().toLocaleString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function say(text, kind) {
+      story.textContent = text;
+      story.className = 'story ' + (kind || '');
+    }
+
+    function addLog(action, amount, kind) {
+      logs.unshift({
+        action: action,
+        amount: amount,
+        when: clock(),
+        kind: kind
+      });
+    }
+
+    function render() {
+      document.getElementById('cost-count').textContent = costs.length + (costs.length === 1 ? ' row' : ' rows');
+      document.getElementById('log-count').textContent = logs.length + (logs.length === 1 ? ' line' : ' lines');
+
+      if (costs.length === 0) {
+        costRows.innerHTML = '<p class="empty">No records yet.</p>';
+      } else {
+        costRows.innerHTML = costs.map(function (row) {
+          return '<article class="row fresh"><div class="who"><span>' + row.name + '</span><span class="money">' + row.amount + '</span></div><div class="sub">' + row.org + ' · ' + row.course + '</div><div class="meta">E-learning · ordered ' + row.when + '</div></article>';
+        }).join('');
+      }
+
+      if (logs.length === 0) {
+        logRows.innerHTML = '<p class="empty">No lines yet.</p>';
+      } else {
+        logRows.innerHTML = logs.map(function (row, index) {
+          const fresh = index === 0 ? ' ' + row.kind : '';
+          const amount = row.amount ? '<span class="money">' + row.amount + '</span>' : '<span class="meta">No amount</span>';
+          return '<article class="row' + fresh + '"><div class="who"><span>' + row.action + '</span>' + amount + '</div><div class="sub">' + learner.name + ' · ' + learner.org + '</div><div class="meta">' + learner.course + ' · You · ' + row.when + '</div></article>';
+        }).join('');
+      }
+    }
+
+    document.getElementById('do-order').addEventListener('click', function () {
+      if (costs.length === 0) {
+        costs.push(Object.assign({ when: clock() }, learner));
+        addLog('Ordered', learner.amount, 'fresh');
+        say('One cost row appears. In the admin, the Excel file downloads and the certificate moves to Reconcile.', 'added');
+      } else {
+        addLog('Ordered', learner.amount, 'log-only');
+        say('The cost list stays at one row. The new Ordered line is only a note.', 'same');
+      }
+      render();
+    });
+
+    document.getElementById('do-upload').addEventListener('click', function () {
+      addLog('Certificate uploaded', '', 'log-only');
+      say('The PDF upload is written in the diary. The cost list does not grow.', 'same');
+      render();
+    });
+
+    document.getElementById('do-again').addEventListener('click', function () {
+      if (costs.length === 0) {
+        say('Order it first. There is no cost row to leave in place.', 'same');
+        return;
+      }
+      addLog('Ordered', learner.amount, 'log-only');
+      say('Still one cost row. Ordering again only adds a line to the activity log.', 'same');
+      render();
+    });
+
+    document.getElementById('do-back').addEventListener('click', function () {
+      if (costs.length === 0) {
+        say('There is no cost row to remove.', 'same');
+        return;
+      }
+      costs.length = 0;
+      addLog('Moved back to order', learner.amount, 'fresh');
+      say('The cost row is gone. The diary keeps who moved it back, and the amount that was removed.', 'removed');
+      render();
+    });
+
+    document.getElementById('do-reorder').addEventListener('click', function () {
+      if (costs.length > 0) {
+        addLog('Ordered', learner.amount, 'log-only');
+        say('The row is already on the cost list, so this order is only a note.', 'same');
+      } else {
+        costs.push(Object.assign({ when: clock() }, learner));
+        addLog('Ordered', learner.amount, 'fresh');
+        say('One cost row is back, at £28.10.', 'added');
+      }
+      render();
+    });
+
+    document.getElementById('do-reset').addEventListener('click', function () {
+      costs.length = 0;
+      logs.length = 0;
+      say('Nothing has been ordered yet. The cost list should say “No records yet”.', '');
+      render();
+    });
+
+    const storageKey = 'iosh-certificate-cost-tester-ticks';
+    const boxes = Array.from(document.querySelectorAll('[data-check]'));
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    function paintProgress() {
+      const done = boxes.filter(function (box) { return box.checked; }).length;
+      document.getElementById('progress-label').textContent = done + ' of ' + boxes.length;
+      document.getElementById('progress-bar').style.width = ((done / boxes.length) * 100) + '%';
+    }
+
+    boxes.forEach(function (box) {
+      box.checked = saved.indexOf(box.dataset.check) !== -1;
+      box.addEventListener('change', function () {
+        const ids = boxes.filter(function (item) { return item.checked; }).map(function (item) { return item.dataset.check; });
+        localStorage.setItem(storageKey, JSON.stringify(ids));
+        paintProgress();
+      });
+    });
+
+    document.getElementById('clear-checks').addEventListener('click', function () {
+      boxes.forEach(function (box) { box.checked = false; });
+      localStorage.removeItem(storageKey);
+      paintProgress();
+    });
+
+    render();
+    paintProgress();
+  </script>
+</body>
+</html>
