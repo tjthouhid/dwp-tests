@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course book download warning</title>
+<style>
+  :root {
+    --paper: #f3f5f8;
+    --card: #ffffff;
+    --ink: #1b2430;
+    --muted: #5c6b7c;
+    --line: #e2e7ef;
+    --orange: #e4570e;
+    --orange-soft: #fff1e8;
+    --ok: #157347;
+    --ok-soft: #e8f6ee;
+    --bad: #b42318;
+    --bad-soft: #fdeceb;
+    --skip: #8a5a00;
+    --skip-soft: #fff6de;
+    --shadow: 0 18px 40px rgba(27, 36, 48, 0.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font: 17px/1.5 "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+  .app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+  aside {
+    background: #fff;
+    border-right: 1px solid var(--line);
+    padding: 28px 18px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: auto;
+  }
+  .brand { padding: 0 10px 18px; }
+  .brand h1 { margin: 0; font-size: 22px; letter-spacing: -0.03em; line-height: 1.2; }
+  .brand p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+  .progress-line { height: 8px; background: var(--line); border-radius: 99px; margin: 16px 10px 6px; overflow: hidden; }
+  .progress-line span { display: block; height: 100%; background: var(--orange); width: 0; }
+  .progress-caption { margin: 0 10px 18px; color: var(--muted); font-size: 13px; }
+  .jump { width: calc(100% - 20px); margin: 0 10px 16px; }
+  .ask { margin: 0 0 10px; font-weight: 700; }
+  nav { display: flex; flex-direction: column; gap: 18px; }
+  .nav-group h2 { margin: 0 8px 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .nav-item {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .nav-item:hover { background: var(--paper); }
+  .nav-item.current { background: var(--orange-soft); }
+  .dot {
+    width: 22px; height: 22px; border-radius: 50%; flex: none; margin-top: 1px;
+    border: 2px solid #c5ced8; background: #fff;
+  }
+  .dot.pass { background: var(--ok); border-color: var(--ok); }
+  .dot.fail { background: var(--bad); border-color: var(--bad); }
+  .dot.blocked { background: var(--skip); border-color: var(--skip); }
+  .nav-item span.title { font-size: 14.5px; line-height: 1.35; }
+  main { padding: 36px 40px 64px; max-width: 860px; }
+  .card {
+    background: var(--card);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 32px 34px;
+  }
+  .kicker { margin: 0 0 8px; color: var(--orange); font-weight: 600; font-size: 14px; }
+  h2.screen-title { margin: 0 0 10px; font-size: 32px; letter-spacing: -0.035em; line-height: 1.15; }
+  .lede { margin: 0 0 22px; color: #334155; font-size: 18px; max-width: 38em; }
+  .need { display: grid; gap: 12px; margin: 0 0 26px; }
+  .need article {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+    align-items: start;
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .need strong { display: block; }
+  .need p { margin: 2px 0 0; color: var(--muted); }
+  .mark {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: #fff; font-weight: 700; color: var(--orange);
+  }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+  label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+  label.field span.hint { font-weight: 400; color: var(--muted); }
+  input[type="text"], input[type="date"], select, textarea {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-weight: 400;
+  }
+  textarea { width: 100%; min-height: 88px; resize: vertical; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .primary, .ghost, .choice {
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid transparent;
+  }
+  .primary { background: var(--orange); color: #fff; border-color: var(--orange); font-weight: 650; }
+  .primary:hover { background: #c94b0b; }
+  .ghost { background: #fff; border-color: var(--line); }
+  .ghost:hover { background: var(--paper); }
+  .steps { margin: 0 0 18px; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .steps li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .steps li i {
+    font-style: normal;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--ink); color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .see {
+    background: var(--ok-soft);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+  .see strong { display: block; margin-bottom: 4px; color: var(--ok); }
+  .preview-label { margin: 0 0 8px; font-weight: 700; }
+  .mail {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0 0 22px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .mail-top { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .mail-top strong { color: var(--ink); }
+  .mail-header { background: #ff6600; padding: 22px 16px; text-align: center; }
+  .mail-header h3 { color: #fff; margin: 0; font-size: 20px; font-weight: 600; }
+  .mail-body { padding: 22px 20px; color: #333; }
+  .mail-body p { margin: 0 0 12px; }
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .choice {
+    background: #fff;
+    border: 2px solid var(--line);
+    text-align: left;
+    min-height: 72px;
+  }
+  .choice small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
+  .choice.pass.active { background: var(--ok-soft); border-color: var(--ok); }
+  .choice.fail.active { background: var(--bad-soft); border-color: var(--bad); }
+  .choice.blocked.active { background: var(--skip-soft); border-color: var(--skip); }
+  .note-label { display: block; font-weight: 600; margin-bottom: 6px; }
+  .footer-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 22px; }
+  .summary article { border-radius: 16px; padding: 16px; }
+  .summary .n { font-size: 36px; letter-spacing: -0.04em; line-height: 1; }
+  .summary .ok { background: var(--ok-soft); }
+  .summary .bad { background: var(--bad-soft); }
+  .summary .skip { background: var(--skip-soft); }
+  .problem-list { margin: 0 0 20px; padding-left: 18px; }
+  .problem-list li { margin: 6px 0; }
+  .saved-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+  .result-box {
+    width: 100%;
+    min-height: 220px;
+    margin: 8px 0 16px;
+    font: 13px/1.45 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    background: #f8fafc;
+    white-space: pre;
+  }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 999px;
+    opacity: 0; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .print-sheet { display: none; }
+  @media (min-width: 901px) {
+    .jump { display: none; }
+  }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    nav { display: none; }
+    main { padding: 20px 16px 40px; }
+    .card { padding: 22px 18px; border-radius: 18px; }
+    h2.screen-title { font-size: 26px; }
+    .fields, .choices, .summary { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media print {
+    .app { display: none; }
+    .print-sheet { display: block; padding: 24px; }
+    .print-sheet h1 { margin: 0 0 8px; }
+    .print-sheet article { break-inside: avoid; border-top: 1px solid #ccc; padding: 12px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <h1>Course book warning</h1>
+      <p>Work through the list. Your answers stay in this browser.</p>
+    </div>
+    <div class="progress-line" aria-hidden="true"><span id="bar"></span></div>
+    <p class="progress-caption" id="caption">Not started</p>
+    <select class="jump" id="jump" aria-label="Jump to a check"></select>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <div class="card" id="stage"></div>
+  </main>
+</div>
+<div class="print-sheet" id="print-sheet"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const DAY_BEFORE = `
+  <div class="mail">
+    <div class="mail-top"><strong>Subject:</strong> Course expiry notice: 04/12/2026</div>
+    <div class="mail-header"><h3>International Workplace</h3></div>
+    <div class="mail-body">
+      <p>Hi Alex Learner,</p>
+      <p>We wanted to let you know you access to your DWP-funded IOSH Managing Occupational Health and Wellbeing course expires tomorrow. If you haven’t yet started, to be eligible for the fully funded version of the course, you must start by 31 March 2026.</p>
+      <p><strong>Please download your course book before you lose access.</strong> Your course book, including any notes you made, is only available inside the course. Download it before 04/12/2026. After that date the course closes and you will not be able to open it.</p>
+      <p>We hope you’ve made good progress through the course, ahead of tomorrow’s deadline.</p>
+      <p>If not, it may be possible for you to re-register for the course, which will mean you’ll need to start it again from the beginning.</p>
+      <p>This still applies if you have already submitted your project or received your certificate. Download your course book now if you want to keep a copy.</p>
+      <p>Best wishes,</p>
+      <p>The International Workplace team</p>
+    </div>
+  </div>
+`;
+
+const PASSED = `
+  <div class="mail">
+    <div class="mail-top"><strong>Subject:</strong> Congratulations, you've passed!</div>
+    <div class="mail-header"><h3>International Workplace</h3></div>
+    <div class="mail-body">
+      <p>Hi Alex Learner,</p>
+      <p>Congratulations! You’ve passed your IOSH Managing Occupational Health and Wellbeing course with International Workplace and have been awarded your official certificate from the Institution of Occupational Safety and Health.</p>
+      <p><strong>Please download your course book before you lose access.</strong> Your course book, including any notes you made, is only available inside the course. Download it before your access ends on 04/12/2026. After that date the course closes and you will not be able to open it.</p>
+      <p>We’ve ordered your certificated from IOSH, and will let you know when it’s available to download from our platform.</p>
+      <p><strong>Next step: complete the post-course evaluation</strong></p>
+      <p>Best wishes,</p>
+      <p>The International Workplace team</p>
+    </div>
+  </div>
+`;
+
+const FIVE_DAYS = `
+  <div class="mail">
+    <div class="mail-top"><strong>Subject:</strong> Reminder: your course expires on 04/12/2026</div>
+    <div class="mail-header"><h3>International Workplace</h3></div>
+    <div class="mail-body">
+      <p>Hi Alex Learner,</p>
+      <p>You only have 5 days left to complete your IOSH Managing Occupational Health and Wellbeing course with International Workplace, which expires on 04/12/2026.</p>
+      <p>The eLearning version of this course only takes 6 hours, so you’ve still got plenty of time to finish at a pace that’s right for you.</p>
+      <p>If you have already submitted your project, please ignore this email.</p>
+      <p>Best wishes,</p>
+      <p>The International Workplace team</p>
+    </div>
+  </div>
+`;
+
+const GROUPS = [
+  {
+    title: 'The day before access ends',
+    cases: [
+      {
+        id: 'A1',
+        title: 'It tells them to download the course book',
+        steps: [
+          'Read the email below. This is the reminder sent the day before the course closes.',
+          'Look for a line about downloading the course book.'
+        ],
+        see: 'The email says to download the course book before they lose access. It says the book, including any notes, is only available inside the course, and that after 04/12/2026 the course closes.',
+        preview: DAY_BEFORE
+      },
+      {
+        id: 'A2',
+        title: 'Someone who already submitted still needs this email',
+        steps: [
+          'Stay on the same day-before email.',
+          'Look for the old line that said to ignore the email if the project was already submitted.'
+        ],
+        see: 'That ignore line is gone. The email says this still applies if they have already submitted their project or received their certificate, and to download the course book if they want to keep a copy.',
+        preview: DAY_BEFORE
+      }
+    ]
+  },
+  {
+    title: 'When they pass',
+    cases: [
+      {
+        id: 'B1',
+        title: 'The pass email tells them to download the course book',
+        steps: [
+          'Read the email below. This is the email sent when a learner passes.',
+          'Look just under the congratulations line.'
+        ],
+        see: 'The next paragraph tells them to download the course book before they lose access, and says the book is only available inside the course.',
+        preview: PASSED
+      },
+      {
+        id: 'B2',
+        title: 'The pass email gives the date access ends',
+        steps: [
+          'Stay on the pass email.',
+          'Look for a date in the download warning.'
+        ],
+        see: 'The warning says to download the course book before access ends on 04/12/2026. The congratulations line and the survey request are still there.',
+        preview: PASSED
+      }
+    ]
+  },
+  {
+    title: 'What stays the same',
+    cases: [
+      {
+        id: 'C1',
+        title: 'The earlier reminder is unchanged',
+        steps: [
+          'Read the email below. This is the reminder sent 5 days before the course closes, not the day before.',
+          'Look for the new download warning, and for the ignore line.'
+        ],
+        see: 'This email does not contain the new download warning. It still says: if you have already submitted your project, please ignore this email.',
+        preview: FIVE_DAYS
+      },
+      {
+        id: 'C2',
+        title: 'The course still closes on the end date',
+        steps: [
+          'You do not need to open a learner account for this check.',
+          'Read what this change does, and what it does not do.'
+        ],
+        see: 'The course still closes on the expiry date. This change only warns the learner to download the course book while they can still open the course. It does not keep the course open until the project is marked.'
+      }
+    ]
+  }
+];
+
+const STORAGE_KEY = 'ut-course-book-download-v1';
+const STATUS_LABEL = { pass: 'It worked', fail: 'Something’s wrong', blocked: 'I couldn’t try this', '': 'Not checked' };
+
+const state = loadState();
+
+function loadState() {
+  const empty = { meta: {}, cases: {}, screen: 'welcome', index: 0 };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    return saved ? { ...empty, ...saved, meta: saved.meta || {}, cases: saved.cases || {} } : empty;
+  } catch {
+    return empty;
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderChrome();
+}
+
+function allCases() {
+  return GROUPS.flatMap((group) => group.cases);
+}
+
+function caseAt(index) {
+  return allCases()[index];
+}
+
+function caseState(id) {
+  state.cases[id] = state.cases[id] || { status: '', notes: '' };
+  return state.cases[id];
+}
+
+function totals() {
+  const counts = { pass: 0, fail: 0, blocked: 0, done: 0, total: allCases().length };
+  allCases().forEach((item) => {
+    const status = caseState(item.id).status;
+    if (status) {
+      counts[status] += 1;
+      counts.done += 1;
+    }
+  });
+  return counts;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function groupFor(index) {
+  let cursor = 0;
+  for (const group of GROUPS) {
+    if (index < cursor + group.cases.length) return { group, place: index - cursor + 1 };
+    cursor += group.cases.length;
+  }
+  return { group: GROUPS[0], place: 1 };
+}
+
+function renderChrome() {
+  const counts = totals();
+  document.getElementById('bar').style.width = `${(counts.done / counts.total) * 100}%`;
+  document.getElementById('caption').textContent = counts.done === 0
+    ? `${counts.total} checks`
+    : `${counts.done} of ${counts.total} checked`;
+
+  document.getElementById('nav').innerHTML = GROUPS.map((group) => `
+    <div class="nav-group">
+      <h2>${escapeHtml(group.title)}</h2>
+      ${group.cases.map((item) => {
+        const index = allCases().findIndex((candidate) => candidate.id === item.id);
+        const status = caseState(item.id).status;
+        const current = state.screen === 'check' && state.index === index ? 'current' : '';
+        return `<button type="button" class="nav-item ${current}" data-goto="${index}">
+          <i class="dot ${status}"></i>
+          <span class="title">${escapeHtml(item.title)}</span>
+        </button>`;
+      }).join('')}
+    </div>
+  `).join('');
+
+  const jump = document.getElementById('jump');
+  const currentValue = state.screen === 'welcome' ? 'welcome' : state.screen === 'done' ? 'done' : String(state.index);
+  jump.innerHTML = `<option value="welcome">Start here</option>` + allCases().map((item, index) => {
+    const status = caseState(item.id).status;
+    const mark = status === 'pass' ? '✓ ' : status === 'fail' ? '! ' : status === 'blocked' ? '– ' : '';
+    return `<option value="${index}">${mark}${escapeHtml(item.title)}</option>`;
+  }).join('') + `<option value="done">After the test</option>`;
+  jump.value = currentValue;
+
+  renderPrint();
+}
+
+function renderPrint() {
+  const meta = state.meta;
+  document.getElementById('print-sheet').innerHTML = `
+    <h1>Course book download warning</h1>
+    <p>${escapeHtml(meta.tester || 'Name not given')} · ${escapeHtml(meta.environment || 'Place not given')} · ${escapeHtml(meta.date || '')}</p>
+    <p>${escapeHtml(meta.accounts || '')}</p>
+    ${allCases().map((item) => {
+      const current = caseState(item.id);
+      return `<article><strong>${escapeHtml(item.title)}</strong> — ${escapeHtml(STATUS_LABEL[current.status])}${current.notes ? `<br>${escapeHtml(current.notes)}` : ''}</article>`;
+    }).join('')}
+  `;
+}
+
+function field(name, label, hint, control) {
+  return `<label class="field">${label}${hint ? `<span class="hint">${hint}</span>` : ''}${control.replace('VALUE', escapeHtml(state.meta[name] || ''))}</label>`;
+}
+
+function renderWelcome() {
+  if (!state.meta.date) state.meta.date = new Date().toISOString().slice(0, 10);
+  const counts = totals();
+  document.getElementById('stage').innerHTML = `
+    <p class="kicker">For the person checking this</p>
+    <h2 class="screen-title">Does the email tell them to save the course book?</h2>
+    <p class="lede">Read each email on this page and mark what you see. You do not need to sign in, and you do not need a learner whose course is about to end.</p>
+    <div class="need">
+      <article><div class="mark">1</div><div><strong>This page</strong><p>Each check shows the email. The sample learner is Alex, and the sample end date is 04/12/2026.</p></div></article>
+      <article><div class="mark">2</div><div><strong>Two emails changed</strong><p>The one sent the day before access ends, and the one sent when they pass.</p></div></article>
+      <article><div class="mark">3</div><div><strong>The course still closes</strong><p>This does not keep the course open. It only warns them to download the book while they still can.</p></div></article>
+    </div>
+    <div class="fields">
+      ${field('tester', 'Your name', '', '<input type="text" data-meta="tester" value="VALUE" autocomplete="name">')}
+      ${field('environment', 'Where are you testing?', '', `<select data-meta="environment">
+        <option value="">Choose one</option>
+        <option ${state.meta.environment === 'This test page' ? 'selected' : ''}>This test page</option>
+        <option ${state.meta.environment === 'The shared test site' ? 'selected' : ''}>The shared test site</option>
+        <option ${state.meta.environment === 'I’m not sure' ? 'selected' : ''}>I’m not sure</option>
+      </select>`)}
+      ${field('date', 'Today’s date', '', '<input type="date" data-meta="date" value="VALUE">')}
+      ${field('accounts', 'Did you also check a real email?', '', '<input type="text" data-meta="accounts" value="VALUE" placeholder="Leave blank if you only used this page">')}
+    </div>
+    <div class="actions">
+      <button type="button" class="primary" data-go="check">${counts.done ? 'Continue the checks' : 'Start the first check'}</button>
+      ${counts.done ? '<button type="button" class="ghost" data-go="done">After the test</button>' : ''}
+    </div>
+    <p class="saved-note">Your answers stay in this browser. The last page shows how to copy them into Jira, an email, or a message.</p>
+  `;
+}
+
+function renderCheck() {
+  const item = caseAt(state.index);
+  const { group, place } = groupFor(state.index);
+  const current = caseState(item.id);
+  const last = state.index === allCases().length - 1;
+  document.getElementById('stage').innerHTML = `
+    <p class="kicker">${escapeHtml(group.title)} · ${place} of ${group.cases.length}</p>
+    <h2 class="screen-title">${escapeHtml(item.title)}</h2>
+    <ol class="steps">
+      ${item.steps.map((step, index) => `<li><i>${index + 1}</i><span>${escapeHtml(step)}</span></li>`).join('')}
+    </ol>
+    ${item.preview ? `<p class="preview-label">The email</p>${item.preview}` : ''}
+    <div class="see"><strong>What you should see</strong>${escapeHtml(item.see)}</div>
+    <p class="ask">How did it go?</p>
+    <div class="choices" role="group" aria-label="How did it go?">
+      ${[
+        ['pass', 'It worked', 'This matched what I should see'],
+        ['fail', 'Something’s wrong', 'This did not match'],
+        ['blocked', 'I couldn’t try this', 'I didn’t have what I needed']
+      ].map(([status, label, hint]) => `
+        <button type="button" class="choice ${status} ${current.status === status ? 'active' : ''}" data-status="${status}" aria-pressed="${current.status === status}">
+          ${label}<small>${hint}</small>
+        </button>
+      `).join('')}
+    </div>
+    <label class="note-label" for="notes">What did you see? <span class="hint" style="font-weight:400;color:var(--muted)">Optional</span></label>
+    <textarea id="notes" placeholder="Add anything that would help us understand. Leave this empty if it simply worked.">${escapeHtml(current.notes)}</textarea>
+    <div class="footer-nav">
+      <button type="button" class="ghost" data-go="${state.index === 0 ? 'welcome' : 'prev'}">${state.index === 0 ? 'Back to the start' : 'Previous check'}</button>
+      <button type="button" class="primary" data-go="${last ? 'done' : 'next'}">${last ? 'Finish and send results' : 'Next check'}</button>
+    </div>
+  `;
+}
+
+function renderDone() {
+  const counts = totals();
+  const problems = allCases().filter((item) => caseState(item.id).status === 'fail');
+  const skipped = allCases().filter((item) => caseState(item.id).status === 'blocked');
+  const unchecked = counts.total - counts.done;
+  const report = resultsText();
+  document.getElementById('stage').innerHTML = `
+    <p class="kicker">After the test</p>
+    <h2 class="screen-title">Send your results</h2>
+    <p class="lede">Someone else needs to see what you found. Copy the report below and paste it into Jira, an email, or a message. You do not need to retype the checks.</p>
+    <div class="need">
+      <article><div class="mark">1</div><div><strong>Copy the report</strong><p>Press Copy results. The full report is placed on your clipboard.</p></div></article>
+      <article><div class="mark">2</div><div><strong>Open where it should go</strong><p>Open the Jira ticket, or an email, Slack, or Teams message to the person who asked you to test.</p></div></article>
+      <article><div class="mark">3</div><div><strong>Paste</strong><p>Paste into a comment or the message. They will see your name, what worked, what needs a look, and any notes you wrote.</p></div></article>
+    </div>
+    <div class="summary">
+      <article class="ok"><div class="n">${counts.pass}</div>worked</article>
+      <article class="bad"><div class="n">${counts.fail}</div>need a look</article>
+      <article class="skip"><div class="n">${counts.blocked}</div>couldn’t try</article>
+    </div>
+    ${unchecked ? `<p class="saved-note">${unchecked} ${unchecked === 1 ? 'check has' : 'checks have'} no answer yet. You can still send this, or go back and finish them.</p>` : ''}
+    ${problems.length ? `<p><strong>Needs a look</strong></p><ul class="problem-list">${problems.map((item) => `<li>${escapeHtml(item.title)}${caseState(item.id).notes ? ` — ${escapeHtml(caseState(item.id).notes)}` : ''}</li>`).join('')}</ul>` : ''}
+    ${skipped.length ? `<p><strong>Couldn’t try</strong></p><ul class="problem-list">${skipped.map((item) => `<li>${escapeHtml(item.title)}</li>`).join('')}</ul>` : ''}
+    <label class="note-label" for="result-text">This is what will be pasted</label>
+    <textarea id="result-text" class="result-box" readonly>${escapeHtml(report)}</textarea>
+    <div class="actions">
+      <button type="button" class="primary" id="copy">Copy results</button>
+      <button type="button" class="ghost" id="print">Print</button>
+      <button type="button" class="ghost" data-go="check">Review the checks</button>
+      <button type="button" class="ghost" id="reset">Start again</button>
+    </div>
+    <p class="saved-note">If Copy results does not work, click inside the box, select everything, and copy it yourself.</p>
+  `;
+}
+
+function render() {
+  if (state.screen === 'welcome') renderWelcome();
+  else if (state.screen === 'done') renderDone();
+  else renderCheck();
+  renderChrome();
+}
+
+function go(target) {
+  if (target === 'welcome') state.screen = 'welcome';
+  else if (target === 'done') state.screen = 'done';
+  else if (target === 'check') state.screen = 'check';
+  else if (target === 'next') state.index += 1;
+  else if (target === 'prev') state.index -= 1;
+  saveState();
+  render();
+  window.scrollTo(0, 0);
+}
+
+function resultsText() {
+  const meta = state.meta;
+  const counts = totals();
+  const problems = allCases().filter((item) => caseState(item.id).status === 'fail');
+  const skipped = allCases().filter((item) => caseState(item.id).status === 'blocked');
+  const lineFor = (item) => {
+    const current = caseState(item.id);
+    return `- ${STATUS_LABEL[current.status]} — ${item.title}${current.notes.trim() ? ` — ${current.notes.trim()}` : ''}`;
+  };
+  const lines = [
+    'Course book download warning',
+    '',
+    `Tester: ${meta.tester || '-'}`,
+    `Where: ${meta.environment || '-'}`,
+    `Date: ${meta.date || '-'}`,
+    `Real email checked: ${meta.accounts || '-'}`,
+    '',
+    `${counts.done} of ${counts.total} checked`,
+    `${counts.pass} worked`,
+    `${counts.fail} need a look`,
+    `${counts.blocked} couldn’t try`,
+    `${counts.total - counts.done} not checked`,
+    ''
+  ];
+
+  lines.push('Needs a look');
+  if (problems.length === 0) lines.push('- None');
+  problems.forEach((item) => lines.push(lineFor(item)));
+  lines.push('');
+
+  lines.push('Couldn’t try');
+  if (skipped.length === 0) lines.push('- None');
+  skipped.forEach((item) => lines.push(lineFor(item)));
+  lines.push('');
+
+  lines.push('Every check');
+  GROUPS.forEach((group) => {
+    lines.push('');
+    lines.push(group.title);
+    group.cases.forEach((item) => lines.push(lineFor(item)));
+  });
+
+  return lines.join('\n');
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+document.body.addEventListener('click', async (event) => {
+  const statusButton = event.target.closest('button[data-status]');
+  if (statusButton) {
+    const current = caseState(caseAt(state.index).id);
+    current.status = current.status === statusButton.dataset.status ? '' : statusButton.dataset.status;
+    saveState();
+    render();
+    return;
+  }
+  const goButton = event.target.closest('[data-go]');
+  if (goButton) {
+    go(goButton.dataset.go);
+    return;
+  }
+  const navButton = event.target.closest('[data-goto]');
+  if (navButton) {
+    state.screen = 'check';
+    state.index = Number(navButton.dataset.goto);
+    saveState();
+    render();
+    return;
+  }
+  if (event.target.id === 'copy') {
+    const text = resultsText();
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Copied. Open Jira, an email, or a message, then paste.');
+    } catch {
+      window.prompt('Copy your answers:', text);
+    }
+  }
+  if (event.target.id === 'print') window.print();
+  if (event.target.id === 'reset') {
+    if (!window.confirm('Clear your answers in this browser and start again?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  }
+});
+
+document.body.addEventListener('input', (event) => {
+  const meta = event.target.dataset.meta;
+  if (meta) {
+    state.meta[meta] = event.target.value;
+    saveState();
+    return;
+  }
+  if (event.target.id === 'notes') {
+    caseState(caseAt(state.index).id).notes = event.target.value;
+    saveState();
+  }
+});
+
+document.body.addEventListener('change', (event) => {
+  if (event.target.id !== 'jump') return;
+  const value = event.target.value;
+  if (value === 'welcome' || value === 'done') state.screen = value;
+  else {
+    state.screen = 'check';
+    state.index = Number(value);
+  }
+  saveState();
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
