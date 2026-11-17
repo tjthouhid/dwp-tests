@@ -156,6 +156,21 @@
   .mail-header h3 { color: #fff; margin: 0; font-size: 20px; font-weight: 600; }
   .mail-body { padding: 22px 20px; color: #333; }
   .mail-body p { margin: 0 0 12px; }
+  .bell {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0 0 22px;
+    max-width: 420px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .bell-top { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 700; display: flex; justify-content: space-between; }
+  .bell-top span { background: var(--orange); color: #fff; border-radius: 99px; padding: 0 9px; font-size: 13px; }
+  .bell-item { padding: 14px 16px; border-left: 4px solid var(--orange); }
+  .bell-item strong { display: block; margin-bottom: 4px; }
+  .bell-item p { margin: 0; color: var(--muted); }
   .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .choice {
     background: #fff;
@@ -284,6 +299,19 @@ const FIVE_DAYS = `
   </div>
 `;
 
+const bellNotice = (deadline) => `
+  <div class="bell">
+    <div class="bell-top">Notifications <span>1</span></div>
+    <div class="bell-item">
+      <strong>Download your course book</strong>
+      <p>Your course book, including any notes you made, is only available inside the course. Download it before ${deadline}. After that date the course closes and you will not be able to open it.</p>
+    </div>
+  </div>
+`;
+
+const BELL = bellNotice('04/12/2026');
+const BELL_NO_DATE = bellNotice('your access ends');
+
 const GROUPS = [
   {
     title: 'The day before access ends',
@@ -332,6 +360,43 @@ const GROUPS = [
         ],
         see: 'The warning says to download the course book before access ends on 04/12/2026. The congratulations line and the survey request are still there.',
         preview: PASSED
+      }
+    ]
+  },
+  {
+    title: 'In the notification bell',
+    cases: [
+      {
+        id: 'D1',
+        title: 'The bell shows a notice to download the course book',
+        steps: [
+          'Read the notice below. This is what the learner sees when they open the bell at the top of the site.',
+          'It is added at the same two moments as the emails: when they pass, and the day before access ends.'
+        ],
+        see: 'The notice is titled Download your course book. It says the book, including any notes, is only available inside the course, to download it before 04/12/2026, and that after that date the course closes.',
+        preview: BELL,
+        previewLabel: 'The notice'
+      },
+      {
+        id: 'D2',
+        title: 'A learner with no end date still gets a clear notice',
+        steps: [
+          'Read the notice below. This is the wording used when the course has no end date on record.',
+          'Look at what it says in place of the date.'
+        ],
+        see: 'The notice says to download the course book before your access ends. The rest of the wording is the same.',
+        preview: BELL_NO_DATE,
+        previewLabel: 'The notice'
+      },
+      {
+        id: 'D3',
+        title: 'The learner only gets the notice once',
+        steps: [
+          'This check needs the shared test site and a learner who has passed, or whose course ends tomorrow. If you do not have one, choose I couldn’t try this.',
+          'Sign in as that learner and open the bell at the top of the site.',
+          'Count the notices titled Download your course book for that course.'
+        ],
+        see: 'There is one notice for the course, and it is unread until the learner opens it. A learner who passed and also got the day-before reminder still has only one. The notice shows a title and a message, and does not open a new page.'
       }
     ]
   },
@@ -475,11 +540,11 @@ function renderWelcome() {
   const counts = totals();
   document.getElementById('stage').innerHTML = `
     <p class="kicker">For the person checking this</p>
-    <h2 class="screen-title">Does the email tell them to save the course book?</h2>
-    <p class="lede">Read each email on this page and mark what you see. You do not need to sign in, and you do not need a learner whose course is about to end.</p>
+    <h2 class="screen-title">Are they told to save the course book?</h2>
+    <p class="lede">Read each email and notice on this page and mark what you see. Only the last bell check needs you to sign in; skip it if you do not have a suitable learner.</p>
     <div class="need">
-      <article><div class="mark">1</div><div><strong>This page</strong><p>Each check shows the email. The sample learner is Alex, and the sample end date is 04/12/2026.</p></div></article>
-      <article><div class="mark">2</div><div><strong>Two emails changed</strong><p>The one sent the day before access ends, and the one sent when they pass.</p></div></article>
+      <article><div class="mark">1</div><div><strong>This page</strong><p>Each check shows the email or the notice. The sample learner is Alex, and the sample end date is 04/12/2026.</p></div></article>
+      <article><div class="mark">2</div><div><strong>Two emails and the bell</strong><p>The email sent the day before access ends, the email sent when they pass, and a notice in the bell at both moments.</p></div></article>
       <article><div class="mark">3</div><div><strong>The course still closes</strong><p>This does not keep the course open. It only warns them to download the book while they still can.</p></div></article>
     </div>
     <div class="fields">
@@ -512,7 +577,7 @@ function renderCheck() {
     <ol class="steps">
       ${item.steps.map((step, index) => `<li><i>${index + 1}</i><span>${escapeHtml(step)}</span></li>`).join('')}
     </ol>
-    ${item.preview ? `<p class="preview-label">The email</p>${item.preview}` : ''}
+    ${item.preview ? `<p class="preview-label">${escapeHtml(item.previewLabel || 'The email')}</p>${item.preview}` : ''}
     <div class="see"><strong>What you should see</strong>${escapeHtml(item.see)}</div>
     <p class="ask">How did it go?</p>
     <div class="choices" role="group" aria-label="How did it go?">
