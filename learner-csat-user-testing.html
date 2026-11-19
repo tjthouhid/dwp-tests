@@ -232,7 +232,7 @@ const GROUPS = [
           'Book the same learner on an event that has already ended. Ideally use a multi-day event with 2 or more days, plus a single-day event.',
           'Write down the learner’s email, the course name and the event names.'
         ],
-        see: 'You have a learner with at least one finished course and one finished event. This is set-up only; mark It worked once it is ready.'
+        see: 'You have a learner with at least one finished course and one finished event. This is set-up only; mark It worked once it is ready. The Course, One-day event and Multi-day event situations further on each need their own learner, set up as the check describes.'
       }
     ]
   },
@@ -396,6 +396,317 @@ const GROUPS = [
           'Open an event that finished more than 30 days ago that you have not rated.'
         ],
         see: 'The Your feedback card still lets you rate it, even though the pop-up does not ask about it.'
+      }
+    ]
+  },
+  {
+    title: 'Course situations',
+    cases: [
+      {
+        id: 'CS1',
+        title: 'Course with status Completed',
+        steps: [
+          'Use a learner whose course was set to Completed yesterday.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Course feedback” at the top, asks “How would you rate this course?”, and shows the course name.'
+      },
+      {
+        id: 'CS2',
+        title: 'Course with status Passed',
+        steps: [
+          'Use a learner whose course was set to Passed yesterday.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Course feedback” at the top, asks “How would you rate this course?”, and shows the course name.'
+      },
+      {
+        id: 'CS3',
+        title: 'Course still in progress',
+        steps: [
+          'Use a learner whose course is In progress. If you can, pick one that is close to its expiry date.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this course. It is only asked about once it is Completed or Passed.'
+      },
+      {
+        id: 'CS4',
+        title: 'Course not started',
+        steps: [
+          'Use a learner whose course is Not started.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this course.'
+      },
+      {
+        id: 'CS5',
+        title: 'Course failed',
+        steps: [
+          'Use a learner whose course is Failed.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this course.'
+      },
+      {
+        id: 'CS6',
+        title: 'Course with status Expired',
+        steps: [
+          'Use a learner whose course status is Expired.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this course.'
+      },
+      {
+        id: 'CS7',
+        title: 'Course finished 25 days ago',
+        steps: [
+          'Use a learner whose course was Completed 25 days ago.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The pop-up still asks about it, because it is inside the last 30 days. The box says “Course feedback” at the top, asks “How would you rate this course?”, and shows the course name.'
+      },
+      {
+        id: 'CS8',
+        title: 'Finished course whose licence has expired',
+        steps: [
+          'Use a learner whose course is Completed, but whose licence has since ended.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The pop-up still asks about it. Only the course status counts, not the licence. The box says “Course feedback” at the top, asks “How would you rate this course?”, and shows the course name.'
+      },
+      {
+        id: 'CS9',
+        title: 'Two finished courses',
+        steps: [
+          'Use a learner with two courses Completed on different days in the last 30 days.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.',
+          'Rate the first one and submit.'
+        ],
+        see: 'Two questions, one after the other. The top shows “1 of 2”, then “2 of 2”. The most recently finished course comes first.'
+      }
+    ]
+  },
+  {
+    title: 'One-day event situations',
+    cases: [
+      {
+        id: 'ES1',
+        title: 'Event ended, learner booked, no register taken',
+        steps: [
+          'Use a learner with a confirmed booking on a one-day event that ended yesterday. Do not mark attendance.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Event feedback” at the top, asks “How would you rate this event?”, and shows the event name. There is no separate question for its single session.'
+      },
+      {
+        id: 'ES2',
+        title: 'Event ending soon',
+        steps: [
+          'Use a learner booked on an event that ends later today, or in a few days.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.',
+          'Sign in again after the event’s end time has passed.'
+        ],
+        see: 'Nothing while the event is still running. After the end time has passed, the pop-up asks about it.'
+      },
+      {
+        id: 'ES3',
+        title: 'Event not started yet',
+        steps: [
+          'Use a learner booked on an event that starts in the future.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this event.'
+      },
+      {
+        id: 'ES4',
+        title: 'Learner marked Present',
+        steps: [
+          'Use a learner booked on a finished one-day event and marked Present on the register.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Event feedback” at the top, asks “How would you rate this event?”, and shows the event name. There is no separate question for its single session.'
+      },
+      {
+        id: 'ES5',
+        title: 'Learner marked Late',
+        steps: [
+          'Use a learner booked on a finished one-day event and marked Late on the register.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Event feedback” at the top, asks “How would you rate this event?”, and shows the event name. There is no separate question for its single session.'
+      },
+      {
+        id: 'ES6',
+        title: 'Learner marked Excused',
+        steps: [
+          'Use a learner booked on a finished event and marked Excused on the register.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up appears for this. Open the event page as well: there is no Your feedback card for it.'
+      },
+      {
+        id: 'ES7',
+        title: 'Marked Present without a booking',
+        steps: [
+          'Use a learner who has no booking on a finished event but was marked Present on its register.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The pop-up still asks about it. The box says “Event feedback” at the top, asks “How would you rate this event?”, and shows the event name. There is no separate question for its single session.'
+      },
+      {
+        id: 'ES8',
+        title: 'Booking cancelled',
+        steps: [
+          'Use a learner whose booking on a finished event was cancelled.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up appears for this. Open the event page as well: there is no Your feedback card for it.'
+      },
+      {
+        id: 'ES9',
+        title: 'Event that is Draft, Provisional or Cancelled',
+        steps: [
+          'Use a learner booked on an event with past dates whose status is Draft, Provisional or Cancelled.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up appears for this. Open the event page as well: there is no Your feedback card for it.'
+      },
+      {
+        id: 'ES10',
+        title: 'Event marked Completed before its end time',
+        steps: [
+          'Use a learner booked on an event that has started, whose end time is still in the future, but whose status has been set to Completed.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The pop-up asks about it. Marking an event Completed counts as finished once it has started. The box says “Event feedback” at the top, asks “How would you rate this event?”, and shows the event name. There is no separate question for its single session.'
+      },
+      {
+        id: 'ES11',
+        title: 'Event ending at midnight',
+        steps: [
+          'Use a learner booked on an event whose end time is 00:00 on today’s date.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.',
+          'Sign in again tomorrow.'
+        ],
+        see: 'Not asked today: an end time of 00:00 counts as the end of that day, UK time. It is asked about from tomorrow.'
+      }
+    ]
+  },
+  {
+    title: 'Multi-day event situations',
+    cases: [
+      {
+        id: 'MS1',
+        title: 'Multi-day event still running',
+        steps: [
+          'Use a learner booked on a two-day event where Day 1 has finished and Day 2 is tomorrow.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'One question only: “How would you rate this session?” with “Day 1 · event name”. No question about Day 2 or the whole event yet.'
+      },
+      {
+        id: 'MS2',
+        title: 'Booked on one day only',
+        steps: [
+          'Use a learner booked only on Day 2 of a two-day event (a session booking), with both days finished.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'Two questions: Day 2, and the whole event. Nothing about Day 1.'
+      },
+      {
+        id: 'MS3',
+        title: 'Absent on one day, present on the other',
+        steps: [
+          'Use a learner booked on a finished two-day event, marked Absent on Day 1 and Present on Day 2.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'Two questions: Day 2, and the whole event. Nothing about Day 1.'
+      },
+      {
+        id: 'MS4',
+        title: 'Absent on every day',
+        steps: [
+          'Use a learner booked on a finished two-day event and marked Absent on both days.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for this event or its days, and no Your feedback card on the event page.'
+      },
+      {
+        id: 'MS5',
+        title: 'Session with no name',
+        steps: [
+          'Use a learner booked on a finished multi-day event where one session has no name.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'That session is shown as “Session 1”, “Session 2” and so on instead of a day name.'
+      },
+      {
+        id: 'MS6',
+        title: 'Three-day event',
+        steps: [
+          'Use a learner booked on a finished three-day event.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'Four questions: one for each day, plus one for the whole event. The top counts up to “4 of 4”.'
+      }
+    ]
+  },
+  {
+    title: 'Learning resource situations',
+    cases: [
+      {
+        id: 'RS1',
+        title: 'Resource passed',
+        steps: [
+          'Use a learner who passed a micro learning resource (for example a quiz) yesterday.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Learning resource feedback” at the top, asks “How would you rate this learning resource?”, and shows the resource name.'
+      },
+      {
+        id: 'RS2',
+        title: 'Resource completed',
+        steps: [
+          'Use a learner who completed a micro learning resource yesterday.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'The box says “Learning resource feedback” at the top, asks “How would you rate this learning resource?”, and shows the resource name.'
+      },
+      {
+        id: 'RS3',
+        title: 'Resource failed',
+        steps: [
+          'Use a learner who failed a micro learning resource.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for that resource.'
+      },
+      {
+        id: 'RS4',
+        title: 'Resource finished 40 days ago',
+        steps: [
+          'Use a learner whose only finished resource was more than 30 days ago.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'No pop-up for that resource. Resources can only be rated from the pop-up, so there is nowhere else to rate it.'
+      },
+      {
+        id: 'RS5',
+        title: 'Same resource finished twice',
+        steps: [
+          'Use a learner who finished the same resource twice, once recently.',
+          'Sign in to the learner site as that learner and wait about 3 seconds on My Courses.'
+        ],
+        see: 'Only one question for that resource.'
+      },
+      {
+        id: 'RS6',
+        title: 'Resource ratings in the admin report',
+        steps: [
+          'After rating a resource, sign in to the admin site and open Quality → Learner feedback (CSAT).',
+          'Click the Resources tab at the top.'
+        ],
+        see: 'Your rating is listed with the type “Learning resource”, and Format shows the resource type (for example Quiz). The CSAT by → Type tab shows a Learning resource row.'
       }
     ]
   },
@@ -596,7 +907,7 @@ function renderWelcome() {
     <h2 class="screen-title">Can learners rate their training, and can we see it?</h2>
     <p class="lede">Sign in, try each check, and mark what happened. You do not need to know how the system is built.</p>
     <div class="need">
-      <article><div class="mark">1</div><div><strong>Learner sign-ins</strong><p>A learner with a course and an event finished in the last 30 days. If you can, also a DWP learner who has passed, and a learner with nothing finished.</p></div></article>
+      <article><div class="mark">1</div><div><strong>Learner sign-ins</strong><p>A learner with a course and an event finished in the last 30 days. If you can, also a DWP learner who has passed, and a learner with nothing finished. The situation checks need one learner each, set up as each check describes.</p></div></article>
       <article><div class="mark">2</div><div><strong>Admin sign-ins</strong><p>An IW Owner login, and one other admin login (for example Business Development) to check who is kept out and that access can be granted.</p></div></article>
       <article><div class="mark">3</div><div><strong>A finished multi-day event</strong><p>An event with 2 or more days that has ended, with your learner booked on it. Ask a developer if you need one set up.</p></div></article>
     </div>
